@@ -1,0 +1,21 @@
+<form action="/invite" method="POST">
+    <div class="g-recaptcha" id="captcha" data-sitekey="{{key}}" data-callback=onSubmit></div>
+</form>
+<script src="https://www.google.com/recaptcha/api.js" async defer></script>
+<script>
+
+function onSubmit(token) {
+    var form = new FormData();
+    form.append('token', token);
+    fetch('/invite', {method: 'post', body: form}).then(function(resp) {
+      resp.json().then(function(data) {
+          console.log('resp', data);
+          if(data.success) {
+              window.open('https://discord.gg/' + data.url);
+          } else {
+              alert('Unable to generate a invite, please try again later!');
+          }
+      });
+    });
+}
+</script>
