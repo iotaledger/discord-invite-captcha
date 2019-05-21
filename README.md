@@ -19,8 +19,8 @@ To run this bot you need the following packages installed on your system:
 
 This bot runs using Docker as well, expose port 5000 for this.
 
-`docker build . -t discord_captcha -f Dockerfile`
-`docker run -p 5000:5000 --network host discord_captcha`
+```docker build . -t discord_captcha -f Dockerfile```
+```docker run -p 5000:5000 --network host discord_captcha```
 
 
 ## Used environment variables in the .env file
