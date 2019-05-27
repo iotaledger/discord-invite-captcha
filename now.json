@@ -1,0 +1,6 @@
+{
+  "name": "iota-discord",
+  "version": 1,
+  "builds": [{ "src": "server.py", "use": "@now/python" }],
+  "routes": [{ "src": "(.*)", "dest": "server.py" }]
+}
