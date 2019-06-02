@@ -1,21 +1,51 @@
-<form action="/invite" method="POST">
-    <div class="g-recaptcha" id="captcha" data-sitekey="{{key}}" data-callback=onSubmit></div>
-</form>
-<script src="https://www.google.com/recaptcha/api.js" async defer></script>
-<script>
+<html>
+<head>
+    <title>IOTA Discord Invite</title>
+    <link href="https://fonts.googleapis.com/css?family=Nunito+Sans:200,400" rel="stylesheet" />
+    <style type="text/css">
+        html { height: 100%; }
+        body { margin: 0; padding: 0; background: linear-gradient(210deg,#22b1ab,#18817c) no-repeat; color: white; font-family: Nunito Sans,sans-serif !important; box-sizing: border-box;}
+        .container {
+            box-sizing: border-box;
+            margin: 50px auto;
+            max-width: 960px;
+            padding: 0px 10px;
+            width: 100%;
+            text-align: center;
+            line-height: 1.15em;
+        }
+        h1 {
+            font-size: 36px;
+            font-weight: 200;
+            padding: 10px 0 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <img src="static/logo.png" alt="IOTA" />
+        <h1>Discord Invite</h1>
+        <form action="/invite" method="POST">
+            <div class="g-recaptcha" style="display: inline-block;" id="captcha" data-sitekey="{{key}}" data-callback=onSubmit></div>
+        </form>
+    </div>
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    <script>
 
-function onSubmit(token) {
-    var form = new FormData();
-    form.append('token', token);
-    fetch('/invite', {method: 'post', body: form}).then(function(resp) {
-      resp.json().then(function(data) {
-          console.log('resp', data);
-          if(data.success) {
-              window.open('https://discord.gg/' + data.url);
-          } else {
-              alert('Unable to generate a invite, please try again later!');
-          }
-      });
-    });
-}
-</script>
+    function onSubmit(token) {
+        var form = new FormData();
+        form.append('token', token);
+        fetch('/invite', {method: 'post', body: form}).then(function(resp) {
+          resp.json().then(function(data) {
+              console.log('resp', data);
+              if(data.success) {
+                  window.location.href = 'https://discord.gg/' + data.url;
+              } else {
+                  alert('Unable to generate a invite, please try again later!');
+              }
+          });
+        });
+    }
+    </script>
+</body>
+</html>
