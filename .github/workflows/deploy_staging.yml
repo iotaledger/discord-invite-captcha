@@ -8,6 +8,7 @@ on:
     paths:
       - "**"
       - "!.github/workflows/deploy_prod.yaml"
+      - "!.github/workflows/deploy_prod.yaml"
 
 jobs:
   build:
