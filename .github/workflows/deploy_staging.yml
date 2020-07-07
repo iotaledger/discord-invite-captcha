@@ -2,26 +2,11 @@ name: Deploy Staging
 
 on:
   push:
-    branches: [develop]
-  pull_request:
     branches: [ develop ]
-    paths:
-      - "**"
-      - "!.github/workflows/deploy_prod.yaml"
-      - "!.github/workflows/deploy_prod.yaml"
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
-    env:
-      CONFIG_ID: staging
-      SITE_KEY: ${{ secrets.SITE_KEY }}
-      SECRET_KEY: ${{ secrets.SECRET_KEY }}
-      CHANNEL_ID: ${{ secrets.CHANNEL_ID }}
-      DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
-      VERCEL_DOMAIN: ${{ secrets.VERCEL_CLIENT_STAGING_DOMAIN }}
-      VERCEL_PROJECT_NAME: ${{ secrets.VERCEL_CLIENT_PROJECT_NAME }}
 
     steps:
       - uses: actions/checkout@v2
@@ -31,6 +16,6 @@ jobs:
           node-version: "12"
       - name: Deploy staging
         run: |
-          npx vercel --token ${{ secrets.VERCEL_TOKEN }} --scope ${{ secrets.VERCEL_SCOPE }} --force --confirm -m githubCommitSha=${{ github.sha }} --build-env CONFIG_ID=$CONFIG_ID --build-env SITE_KEY=$SITE_KEY --build-env SECRET_KEY=$SECRET_KEY --build-env DISCORD_TOKEN=$DISCORD_TOKEN --build-env CHANNEL_ID=$CHANNEL_ID
-          VERCEL_DEPLOYMENT_URL=$(npx vercel ls --token ${{ secrets.VERCEL_TOKEN }} --scope ${{ secrets.VERCEL_SCOPE }} -m githubCommitSha=${{ github.sha }} | grep $VERCEL_PROJECT_NAME | awk {'print $2'})
-          npx vercel alias --token ${{ secrets.VERCEL_TOKEN }} --scope ${{ secrets.VERCEL_SCOPE }} $VERCEL_DEPLOYMENT_URL $VERCEL_DOMAIN
+          npx vercel --token ${{ secrets.VERCEL_TOKEN }} --scope ${{ secrets.VERCEL_SCOPE }} --force --confirm -m githubCommitSha=${{ github.sha }} --build-env CONFIG_ID=staging --build-env SITE_KEY=${{ secrets.SITE_KEY }} --build-env SECRET_KEY=${{ secrets.SECRET_KEY }} --build-env DISCORD_TOKEN=${{ secrets.DISCORD_TOKEN }} --build-env CHANNEL_ID=${{ secrets.CHANNEL_ID }}
+          VERCEL_DEPLOYMENT_URL=$(npx vercel ls --token ${{ secrets.VERCEL_TOKEN }} --scope ${{ secrets.VERCEL_SCOPE }} -m githubCommitSha=${{ github.sha }} | grep ${{ secrets.VERCEL_CLIENT_PROJECT_NAME }} | awk {'print $2'})
+          npx vercel alias --token ${{ secrets.VERCEL_TOKEN }} --scope ${{ secrets.VERCEL_SCOPE }} $VERCEL_DEPLOYMENT_URL ${{ secrets.VERCEL_CLIENT_STAGING_DOMAIN }}
