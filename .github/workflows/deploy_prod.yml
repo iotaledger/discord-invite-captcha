@@ -8,7 +8,7 @@ on:
       - "!.github/workflows/deploy_prod.yaml"
 
 jobs:
-  build:
+  deploy-prod:
     if: github.ref == 'master'
     runs-on: ubuntu-latest
 
