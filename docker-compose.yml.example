@@ -1,0 +1,30 @@
+version: '3.8'
+
+networks:
+  default:
+    external:
+      name: web
+
+      
+services:
+  invite-bot-app:
+    container_name: invite-bot-app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    expose:
+      - 5000
+    ports:
+      - "6000:5000"
+    environment:
+      SITE_KEY: "x"
+      SECRET_KEY: "x"
+      CHANNEL_ID: "x"
+      DISCORD_TOKEN: "x"
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.services.invite-bot-app.loadbalancer.server.port=5000"
+      - "traefik.http.routers.invite-bot-app.service=invite-bot-app"
+      - "traefik.http.routers.invite-bot-app.rule=Host(`discord.iota.org`)"
+      - "traefik.http.routers.invite-bot-app.entrypoints=websecure" 

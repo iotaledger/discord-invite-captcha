@@ -1,18 +1,24 @@
-FROM phusion/baseimage:0.11
-MAINTAINER dave.defijter@iota.org
+# Use modern Python base image
+FROM python:3.11-slim
+
+# Set working directory
+WORKDIR /app
+
+# Copy only what's needed first to leverage caching
+COPY requirements.txt .
+
+# Install dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy the rest of your app
+COPY . .
+
+# Set environment variables if needed
+ENV PYTHONUNBUFFERED=1
+
+# Expose the port
 EXPOSE 5000
 
-RUN add-apt-repository universe
-RUN apt update
-RUN apt -y install python3 python3-venv python3-pip supervisor
+# Start the Flask app
+CMD ["python", "server.py"]
 
-RUN mkdir -p /captcha/src
-COPY . /captcha/src/
-WORKDIR /captcha/src
-RUN python3 -m venv /captcha/env
-RUN /captcha/env/bin/pip install -r /captcha/src/requirements.txt
-RUN cp /captcha/src/conf/supervisor.conf /etc/supervisor/conf.d/captcha.conf
-
-RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-
-CMD service supervisor start && supervisorctl tail -f captcha

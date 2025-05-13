@@ -5,7 +5,7 @@ import requests
 import os
 
 app = Flask(__name__)
-load_dotenv(verbose=True)
+#load_dotenv(verbose=True)
 
 @app.route("/")
 def index():
@@ -38,3 +38,5 @@ def invite():
         print('Not granting invite!', respdata)
         return json.dumps({'success': False})
 
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000)
