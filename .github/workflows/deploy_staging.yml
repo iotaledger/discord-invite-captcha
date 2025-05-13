@@ -35,10 +35,34 @@ jobs:
           node-version: "20"
       - name: Install latest Vercel CLI
         run: npm install -g vercel
-      - name: Deploy staging
+      - name: Deploy to Vercel and Alias
         run: |
-          TS="$( date +%s )"
-          npx vercel --token ${{ secrets.VERCEL_TOKEN }} --scope ${{ secrets.VERCEL_SCOPE }} --force --confirm -m githubCommitSha=${{ github.sha }} -m timestamp=$TS --build-env CONFIG_ID=$CONFIG_ID --build-env SITE_KEY=${{ secrets.SITE_KEY }} --build-env SECRET_KEY=${{ secrets.SECRET_KEY }} --build-env DISCORD_TOKEN=${{ secrets.DISCORD_TOKEN }} --build-env CHANNEL_ID=${{ secrets.CHANNEL_ID }}
-          VERCEL_DEPLOYMENT_URL=$(npx vercel ls --token ${{ secrets.VERCEL_TOKEN }} --scope ${{ secrets.VERCEL_SCOPE }} -m githubCommitSha=${{ github.sha }} -m timestamp=$TS 2>&1 | grep $VERCEL_PROJECT_NAME | awk {'print $2'})
-          npx vercel alias --token ${{ secrets.VERCEL_TOKEN }} --scope ${{ secrets.VERCEL_SCOPE }} $VERCEL_DEPLOYMENT_URL $VERCEL_DOMAIN
+          TS="$(date +%s)"
+          
+          echo "Starting Vercel deployment for project ID: $VERCEL_PROJECT_ID within Org ID: $VERCEL_ORG_ID"
+          
+          DEPLOY_OUTPUT=$(npx vercel --force --confirm \
+            -m githubCommitSha=${{ github.sha }} \
+            -m timestamp=$TS \
+            --build-env CONFIG_ID=$CONFIG_ID \
+            --build-env SITE_KEY=${{ secrets.SITE_KEY }} \
+            --build-env SECRET_KEY=${{ secrets.SECRET_KEY }} \
+            --build-env DISCORD_TOKEN=${{ secrets.DISCORD_TOKEN }} \
+            --build-env CHANNEL_ID=${{ secrets.CHANNEL_ID }})
+          
+          VERCEL_DEPLOYMENT_URL=$(echo "$DEPLOY_OUTPUT" | tail -n 1)
+          
+          if [[ ! "$VERCEL_DEPLOYMENT_URL" == https://* ]]; then # Simplified basic check
+            echo "Error: Failed to retrieve a valid Vercel deployment URL."
+            echo "Vercel CLI Output:"
+            echo "$DEPLOY_OUTPUT"
+            exit 1
+          fi
+          
+          echo "Successfully deployed to Vercel: $VERCEL_DEPLOYMENT_URL"
+          echo "Aliasing $VERCEL_DEPLOYMENT_URL to $VERCEL_DOMAIN ..."
+
+          npx vercel alias --confirm "$VERCEL_DEPLOYMENT_URL" "$VERCEL_DOMAIN"
+          
+          echo "Alias created successfully."
 
