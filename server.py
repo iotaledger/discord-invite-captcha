@@ -10,30 +10,34 @@ app = Flask(__name__)
 @app.route("/")
 def index():
     return render_template('index.html', key=os.getenv('SITE_KEY'))
-
 @app.route("/invite", methods=['POST'])
 def invite():
     token = request.form['token']
     data = {'secret': os.getenv('SECRET_KEY'), 'response': token}
     resp = requests.post('https://www.google.com/recaptcha/api/siteverify', data=data)
     respdata = resp.json()
+
     if respdata['success']:
         print('Granting invite', respdata)
         
         discordtoken = os.getenv('DISCORD_TOKEN')
+        channel_id = os.getenv('CHANNEL_ID')
+
+        headers = {'Authorization': f'Bot {discordtoken}'}
+        payload = {'max_uses': 1, 'unique': True, 'max_age': 3600}
 
         resp = requests.post(
-            'https://discordapp.com/api/channels/%s/invites' % os.getenv('CHANNEL_ID'), 
-            headers={'Authorization': 'Bot %s' % discordtoken},
-            json={'max_uses': 1, 'unique': True, 'expires': 3600})
+            f'https://discord.com/api/v10/channels/{channel_id}/invites',
+            headers=headers,
+            json=payload)
 
         inv = resp.json()
-        
+        print("Invite creation response:", inv)
+
         if 'code' in inv:
-            return json.dumps({'success': True, 'url': inv['code']})
+            return json.dumps({'success': True, 'url': f"https://discord.gg/{inv['code']}"})
         else:
-            print('Error!')
-            return json.dumps({'success': False})
+            return json.dumps({'success': False, 'error': inv})
     else:
         print('Not granting invite!', respdata)
         return json.dumps({'success': False})
