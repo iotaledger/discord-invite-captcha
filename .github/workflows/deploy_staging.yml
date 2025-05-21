@@ -1,9 +1,6 @@
 name: Deploy Staging
 
 on:
-#  push:
-#    branches: [ develop ]
-
   workflow_dispatch:
     inputs:
       logLevel:
@@ -18,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      # Build specific env vars
+      # Build-specific env vars
       CONFIG_ID: staging
       VERCEL_DOMAIN: ${{ secrets.VERCEL_CLIENT_STAGING_DOMAIN }}
 
@@ -29,18 +26,34 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - name: Use Node.js 14.x
-        uses: actions/setup-node@v1
-        with:
-          node-version: "14"
-      - name: npm 7
-        run: npm install -g npm@7      
-      - name: vercel 27
-        run: npm install -g vercel@27.4.0        
-      - name: Deploy staging
-        run: |
-          TS="$( date +%s )"
-          npx vercel --token ${{ secrets.VERCEL_TOKEN }} --scope ${{ secrets.VERCEL_SCOPE }} --force --confirm -m githubCommitSha=${{ github.sha }} -m timestamp=$TS --build-env CONFIG_ID=$CONFIG_ID --build-env SITE_KEY=${{ secrets.SITE_KEY }} --build-env SECRET_KEY=${{ secrets.SECRET_KEY }} --build-env DISCORD_TOKEN=${{ secrets.DISCORD_TOKEN }} --build-env CHANNEL_ID=${{ secrets.CHANNEL_ID }}
-          VERCEL_DEPLOYMENT_URL=$(npx vercel ls --token ${{ secrets.VERCEL_TOKEN }} --scope ${{ secrets.VERCEL_SCOPE }} -m githubCommitSha=${{ github.sha }} -m timestamp=$TS 2>&1 | grep $VERCEL_PROJECT_NAME | awk {'print $2'})
-          npx vercel alias --token ${{ secrets.VERCEL_TOKEN }} --scope ${{ secrets.VERCEL_SCOPE }} $VERCEL_DEPLOYMENT_URL $VERCEL_DOMAIN
 
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      - name: Install npm@latest
+        run: npm install -g npm
+
+      - name: Install latest Vercel CLI
+        run: npm install -g vercel
+
+      - name: Deploy to Vercel (staging)
+        run: |
+          TS="$(date +%s)"
+          DEPLOY_URL=$(npx vercel --token "${{ secrets.VERCEL_TOKEN }}" \
+            --scope "${{ secrets.VERCEL_SCOPE }}" \
+            --env CONFIG_ID=$CONFIG_ID \
+            --env SITE_KEY="${{ secrets.SITE_KEY }}" \
+            --env SECRET_KEY="${{ secrets.SECRET_KEY }}" \
+            --env DISCORD_TOKEN="${{ secrets.DISCORD_TOKEN }}" \
+            --env CHANNEL_ID="${{ secrets.CHANNEL_ID }}" \
+            --meta githubCommitSha="${{ github.sha }}" \
+            --meta timestamp=$TS \
+            --yes)
+
+          echo "Deployed to $DEPLOY_URL"
+
+          npx vercel alias --token "${{ secrets.VERCEL_TOKEN }}" \
+            --scope "${{ secrets.VERCEL_SCOPE }}" \
+            "$DEPLOY_URL" "$VERCEL_DOMAIN"
